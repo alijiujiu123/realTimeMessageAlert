@@ -4,14 +4,23 @@ Step 4: 翻译
 """
 
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from openai import OpenAI
 from config import OPENROUTER_API_KEY, OPENROUTER_MODEL, OPENROUTER_BASE_URL
 
 logger = logging.getLogger(__name__)
 
 PROMPT_TEMPLATE = """你是紧急预警专业翻译。将以下英文预警消息翻译成{language}。
-规则：1) 保留所有 emoji 原位 2) 数字/坐标/代码不翻译
-3) 专业术语使用{language}官方说法 4) 语气简洁紧迫
+规则：
+1) 保留所有 emoji 原位，位置不变
+2) 以下内容绝对不翻译，原样保留：
+   - GPS 坐标（如 25.2769, 55.2962）
+   - 货币与数字（如 $79.06、BTC $66,000、1,200 USD）
+   - 道路/航班/频道代码（如 E11、FL350、DXB、IATA 代码）
+   - 英文缩写与机构名（如 UTC、ETA、UN OCHA、ICRC、DP World、Reuters、AP）
+   - URL 和 @用户名
+3) 专业术语使用{language}官方说法
+4) 语气简洁紧迫
 5) 只返回翻译结果，不加任何额外说明
 
 原文：
@@ -41,7 +50,7 @@ def translate(text: str, language: str) -> str:
         max_tokens=2048,
     )
     result = response.choices[0].message.content.strip()
-    logger.info("翻译完成 → %s（%d 字符）", language, len(result))
+    logger.info("翻译完成 → %s（原文 %d → 译文 %d 字符）", language, len(text), len(result))
     return result
 
 
@@ -54,9 +63,12 @@ def translate_all(english_text: str) -> dict:
         "chinese": 中文翻译,
     }
     """
-    logger.info("开始翻译（阿拉伯语 + 中文）...")
-    arabic = translate(english_text, "阿拉伯语")
-    chinese = translate(english_text, "中文")
+    logger.info("开始并行翻译（阿拉伯语 + 中文）...")
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        f_arabic = executor.submit(translate, english_text, "阿拉伯语")
+        f_chinese = executor.submit(translate, english_text, "中文")
+        arabic = f_arabic.result()
+        chinese = f_chinese.result()
     return {
         "english": english_text,
         "arabic": arabic,
