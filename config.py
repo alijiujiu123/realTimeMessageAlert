@@ -50,5 +50,5 @@ SEND_TIMEOUT = 10
 MAX_RETRIES = 1
 
 # 翻译模型
-OPENROUTER_MODEL = "google/gemini-flash-1.5"
+OPENROUTER_MODEL = "google/gemini-2.0-flash-001"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
