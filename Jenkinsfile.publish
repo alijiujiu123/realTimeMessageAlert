@@ -13,7 +13,7 @@ pipeline {
                     export LC_ALL=C.UTF-8
                     export PYTHONIOENCODING=utf-8
                     set -a
-                    . /etc/environment
+                    . /etc/host_environment
                     set +a
                     cd /opt/realTimeMessageAlert
                     python3 main.py "$ALERT_CONTENT"
