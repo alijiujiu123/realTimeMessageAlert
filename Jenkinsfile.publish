@@ -9,8 +9,8 @@ pipeline {
         stage('发布预警') {
             steps {
                 sh '''#!/bin/bash
-                    export LANG=en_US.UTF-8
-                    export LC_ALL=en_US.UTF-8
+                    export LANG=C.UTF-8
+                    export LC_ALL=C.UTF-8
                     export PYTHONIOENCODING=utf-8
                     set -a
                     . /etc/environment
