@@ -1,0 +1,24 @@
+pipeline {
+    agent any
+
+    parameters {
+        text(name: 'ALERT_CONTENT', defaultValue: '', description: '粘贴英文原始预警内容')
+    }
+
+    stages {
+        stage('发布预警') {
+            steps {
+                sh """
+                    cd /opt/realTimeMessageAlert
+                    source /etc/environment
+                    python3 main.py "\${ALERT_CONTENT}"
+                """
+            }
+        }
+    }
+
+    post {
+        success { echo '✅ 预警发布成功' }
+        failure { echo '❌ 预警发布失败' }
+    }
+}
