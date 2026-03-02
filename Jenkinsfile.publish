@@ -8,11 +8,13 @@ pipeline {
     stages {
         stage('发布预警') {
             steps {
-                sh """
+                sh '''#!/bin/bash
+                    set -a
+                    . /etc/environment
+                    set +a
                     cd /opt/realTimeMessageAlert
-                    source /etc/environment
-                    python3 main.py "\${ALERT_CONTENT}"
-                """
+                    python3 main.py "$ALERT_CONTENT"
+                '''
             }
         }
     }
